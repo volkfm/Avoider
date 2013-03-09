@@ -2,6 +2,8 @@
 #define _GAME_H_
 #include <SDL.h>
 #include "Script.h"
+#include "Player.h"
+#include "Level.h"
 
 class Game{
 public:
@@ -18,7 +20,12 @@ private:
 	bool Running;
 
 	SDL_Surface* Screen;
+	SDL_Surface* Numbers;
+	SDL_Surface* Blink;
 	Script scr;
+
+	Level lvl;
+	Player plr;
 };
 
 #endif
