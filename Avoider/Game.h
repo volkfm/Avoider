@@ -4,7 +4,11 @@
 #include "Script.h"
 #include "Player.h"
 #include "Level.h"
+#include "Timer.h"
 
+enum GameState {
+	InGame, Paused, MainMenu
+};
 class Game{
 public:
 	Game();
@@ -20,12 +24,15 @@ private:
 	bool Running;
 
 	SDL_Surface* Screen;
-	SDL_Surface* Numbers;
+	SDL_Surface* Sign;
 	SDL_Surface* Blink;
 	Script scr;
 
-	Level lvl;
-	Player plr;
+	Level Lvl;
+	Player Plr;
+	GameState State;
+	CTimer ExitOnWin;
+	CTimer FPSTimer;
 };
 
 #endif

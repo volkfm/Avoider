@@ -1,8 +1,13 @@
 #include "Sprite.h"
 #include <SDL.h>
 #include <vector>
+#include <string>
 
-Sprite::Sprite() {}
+SDL_Surface* Sprite::Font = NULL;
+
+Sprite::Sprite() {
+	Font = Load("images\\font.bmp");
+}
 
 SDL_Surface* Sprite::Load(const char* File) {
 	SDL_Surface* Temp = NULL;
@@ -61,13 +66,38 @@ bool Sprite::Transparent(SDL_Surface* Src, int r, int g, int b) {
 	return true;
 }
 
-void Sprite::DrawEnConts(int EnConts, SDL_Surface* Dest, SDL_Surface* Numbers) {
+void Sprite::DrawEnConts(int EnConts, SDL_Surface* Dest) {
+	char* buff;
+	_itoa(EnConts, buff, 10);
 	if (EnConts > 9) 
 		exit(0); // WTF?
 	else 
-		Draw(Dest, Numbers, 10, 10, 25 * EnConts, 0, 25, 25);
+		DrawString(buff, 10, 10, Dest);
 }
 
-void Sprite::LoadNums(char* File, SDL_Surface* Numbers) {
-	Numbers = Load(File);
+void Sprite::DrawString(std::string Str, int x, int y, SDL_Surface* Dest) {
+	int offsMult = 1;
+
+	for (unsigned int i = 0; i < Str.length(); i++) {
+		Str[i] = toupper(Str.c_str()[i]);
+
+		if (static_cast<int>(Str.c_str()[i]) < 91 &&
+			static_cast<int>(Str.c_str()[i]) > 64) {
+				int sym = static_cast<int>(Str.c_str()[i]) - 65;
+				int yOffsMult = sym / 16;
+
+				Draw(Dest, Font, x + offsMult * 25, y, sym % 16 * 25, yOffsMult*6*5 +1, 25, 25);
+
+				offsMult++;
+		} else if (static_cast<int>(Str.c_str()[i]) < 58 &&
+			static_cast<int>(Str.c_str()[i]) > 47) {
+				int sym = static_cast<int>(Str.c_str()[i]) - 48;
+
+				if (sym < 6)
+					Draw(Dest, Font, x + offsMult * 25, y, sym * 25 + 250, 6 * 5, 25, 25);
+				else
+					Draw(Dest, Font, x + offsMult * 25, y, (sym - 6) * 25, 12 * 5, 25, 25);
+				offsMult++;
+		}
+	}
 }

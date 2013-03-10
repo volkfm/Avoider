@@ -5,10 +5,12 @@
 #include <SDL.h>
 #include <cmath>
 
+#define MAX_FPS 60
+
 Game::Game() {
 	Screen = NULL;
-	Numbers = NULL;
 	Blink = NULL;
+	State = InGame;
 	
 	Running = true;
 }
@@ -31,8 +33,9 @@ bool Game::Init() {
 	if ((Screen = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE | SDL_DOUBLEBUF)) == NULL)
 		return false;
 
-	Numbers = Sprite::Load("images\\nums.bmp");
-	plr.Init(lvl.Load("level01.txt"));
+	Sprite::Sprite();
+	Sign = Sprite::Load("images\\sign.bmp");
+	Plr.Init(Lvl.Load("level01.txt"));
 	Blink = Sprite::Load("images\\blink.bmp");
 	Sprite::Transparent(Blink, 255, 0, 255);
 
@@ -44,15 +47,40 @@ void Game::Cleanup() {
 	SDL_Quit();
 }
 void Game::Loop() {
-	
+	if (Lvl.Blinks.size() == 0 ||
+		Plr.Get() <= 0) {
+			ExitOnWin.Start();
+			State = Paused;
+	}
+
+	if (ExitOnWin.Get() > 3000) 
+		Exit();
 }
 void Game::Render() {
+	FPSTimer.Start();
+
+	if (FPSTimer.Get() < 1000 / MAX_FPS) {
+		return;
+	} else {
+		FPSTimer.Stop();
+		FPSTimer.Start();
+	}
+
 	SDL_FillRect(Screen, &Screen->clip_rect, SDL_MapRGB(Screen->format, 0xFF, 0xFF, 0xFF));
 
-	Sprite::DrawEnConts(plr.Get(), Screen, Numbers);
+	Sprite::DrawString(std::to_string((long long) Plr.Get()), 10, 10, Screen);
 
-	for (int i = 0; i < lvl.Blinks.size(); i++)
-		Sprite::Draw(Screen, Blink, lvl.Blinks.at(i).cx - 16, lvl.Blinks.at(i).cy - 16);
+	for (unsigned int i = 0; i < Lvl.Blinks.size(); i++) {
+		Sprite::Draw(Screen, Blink, Lvl.Blinks.at(i).cx - 16, Lvl.Blinks.at(i).cy - 16);
+		Sprite::DrawString(std::to_string((long long) Lvl.Blinks.at(i).NegativeLevel), Lvl.Blinks.at(i).cx - 16, Lvl.Blinks.at(i).cy - 32, Screen);
+	}
+	if (Lvl.Blinks.size() == 0 &&
+		Plr.Get() >= 0) {
+			Sprite::DrawString("WIN", 300, 200, Screen);
+	} else if (Plr.Get() <= 0 &&
+		Lvl.Blinks.size() > 0) {
+			Sprite::DrawString("LOSE", 300, 200, Screen);
+	}
 
 	SDL_Flip(Screen);
 }
@@ -71,18 +99,22 @@ void Game::Event(SDL_Event* ev) {
 		Exit();
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if (ev ->button.button == SDL_BUTTON_LEFT) {
+		if (ev ->button.button == SDL_BUTTON_LEFT&&
+			State == InGame) {
 			int x = ev ->button.x;
 			int y = ev ->button.y;
 
-			for (int i = 0; i < lvl.Blinks.size(); i++) {
-				if (sqrt((double) (abs(x + lvl.Blinks.at(i).cx) + abs(y + lvl.Blinks.at(i).cy))) < 100) {
-					lvl.Blinks.at(i).NegativeLevel -= 100 - sqrt((double) (abs(x + lvl.Blinks.at(i).cx) + abs(y + lvl.Blinks.at(i).cy)));
-					if (lvl.Blinks.at(i).NegativeLevel < 1) {
-						lvl.Blinks.erase(lvl.Blinks.begin() + i);
+			for (unsigned int i = 0; i < Lvl.Blinks.size(); i++) {
+				if (abs(x - Lvl.Blinks.at(i).cx) + abs(y - Lvl.Blinks.at(i).cy) < 100) {
+					Lvl.Blinks.at(i).NegativeLevel -= 100 - (abs(x - Lvl.Blinks.at(i).cx) + abs(y - Lvl.Blinks.at(i).cy));
+					if (Lvl.Blinks.at(i).NegativeLevel < 1) {
+						Lvl.Blinks.erase(Lvl.Blinks.begin() + i);
+						i--;
 					}
 				}
 			}
+
+			Plr.Waste();
 		}
 	}
 }
