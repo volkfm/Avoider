@@ -3,7 +3,6 @@
 #include "Script.h"
 #include "Player.h"
 #include <SDL.h>
-#include <cmath>
 
 #define MAX_FPS 60
 
@@ -39,6 +38,8 @@ bool Game::Init() {
 	Blink = Sprite::Load("images\\blink.bmp");
 	Sprite::Transparent(Blink, 255, 0, 255);
 
+	srand(SDL_GetTicks());
+
 	return true;
 }
 void Game::Cleanup() {
@@ -55,6 +56,14 @@ void Game::Loop() {
 
 	if (ExitOnWin.Get() > 3000) 
 		Exit();
+
+	for (int i = 0; i < 100; i++) {
+		if (Plr.Particles[i] ->Dead()) {
+			delete Plr.Particles[i];
+			Plr.Particles[i] = new Particle(0,0);
+		} else
+			Plr.Particles[i] ->frames++;
+	}
 }
 void Game::Render() {
 	FPSTimer.Start();
@@ -81,6 +90,8 @@ void Game::Render() {
 		Lvl.Blinks.size() > 0) {
 			Sprite::DrawString("LOSE", 300, 200, Screen);
 	}
+
+	
 
 	SDL_Flip(Screen);
 }

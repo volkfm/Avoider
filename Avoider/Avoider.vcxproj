@@ -73,6 +73,7 @@
     <ClCompile Include="Blink.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Level.cpp" />
+    <ClCompile Include="Particle.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="Sprite.cpp" />
@@ -83,6 +84,7 @@
     <ClInclude Include="Blink.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="Particle.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Script.h" />
     <ClInclude Include="Sprite.h" />
